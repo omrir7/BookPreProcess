@@ -42,6 +42,8 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
     #if I didnt find another entity in the next 100 tookens after the first entity so this is not a good span
     if i>=first_entity_idx+100:
         return False, False
+    if (i >= l):
+        return False, False
     # if i found the second entity which is not identical to the first one
     if entity_appear is not False:
         # while i didnt find the second entity or i found and entity identical to the first one
@@ -49,6 +51,14 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
             if(entity_appear is not False and entity_appear!=first_entity_in_entities_array):
                 characters.append("2 " +text[i])
                 cur_span.append(text[i])
+                i+=1
+                entity_appear = index_2d(names, text[i])
+                #keep going after the second entity until another name or 100 tokens after the first name
+                while(entity_appear is False and i<first_entity_idx+100):
+                    i+=1
+                    if(i<=75230):
+                        entity_appear = index_2d(names, text[i])
+                        cur_span.append(text[i])
                 break
             cur_span.append(text[i])
             i+=1
@@ -108,6 +118,8 @@ while i<len(words):
         entity_appear = index_2d(entities, words[i])
 
     first_character_idx = i
+    if(first_character_idx==75171):
+        print(1)
     cur_span,i =generate_span(words,i,last_span_end_idx,entities)
     last_span_end_idx=i
     i+=1
