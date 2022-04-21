@@ -36,8 +36,9 @@ def spans_to_excel(ordered_spans,excel_path,book):
             cur_span.append(characters[0])
             cur_span.append(characters[1])
             cur_span.append(span_id)
+            del span[-3:] #removing characters names and span length
             span_string = ' '.join(str(v) for v in span) #from list of words to string
-            span_string = re.sub(r'[^\w\s]', '', span_string) #remove panctuations
+            span_string = re.sub(r'[^\w\s]', '', span_string)
             cur_span.append(span_string)
             spans_for_excel.append(cur_span)
             span_id+=1
