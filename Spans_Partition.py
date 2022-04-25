@@ -11,7 +11,8 @@ from collections import OrderedDict
 import pandas as pd
 import string
 import re
-
+import pickle
+import Definitions
 
 
 #this function is dedicated to find if a word is from the 2d names array,
@@ -27,18 +28,38 @@ def index_2d(names2d, appearance):
 
 def spans_to_excel(ordered_spans,excel_path,book):
     spans_for_excel = []
+    words_counter = 0
+    characters_counter = 0
+    books_counter = 0
+    cmap = dict()
+    wmap = dict()
+    bmap = dict()
     for relationship in ordered_spans:
         span_id=0
         for span in relationship[1::]:
             cur_span = []
             characters = relationship[0]
             cur_span.append(book)
+            if(book not in bmap):
+                bmap[book] = books_counter
+                books_counter+=1
             cur_span.append(characters[0])
             cur_span.append(characters[1])
+            if(characters[0] not in cmap):
+                cmap[characters[0]] = characters_counter
+                characters_counter+=1
+            if(characters[1] not in cmap):
+                cmap[characters[1]] = characters_counter
+                characters_counter+=1
             cur_span.append(span_id)
             del span[-3:] #removing characters names and span length
             span_string = ' '.join(str(v) for v in span) #from list of words to string
             span_string = re.sub(r'[^\w\s]', '', span_string)
+            span_list = list(str.split(span_string))
+            for word in span_list:
+                if word not in wmap:
+                    wmap[word] = words_counter
+                    words_counter+=1
             cur_span.append(span_string)
             spans_for_excel.append(cur_span)
             span_id+=1
@@ -47,6 +68,7 @@ def spans_to_excel(ordered_spans,excel_path,book):
     writer = pd.ExcelWriter(excel_path, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='PP_Spans', index=False)
     writer.save()
+    return wmap, cmap, bmap
 
 
 #this function gets a spans object which is not ordered by characters. and returns a spans object that is ordered:
@@ -141,7 +163,7 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
 
 
 print("Generating Entities Structure...",end =" ")
-file1 = open("C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed", encoding="utf-8")
+file1 = open(Definitions.parsed_names_path, encoding="utf-8")
 entities = []
 for line in file1:
   stripped_line = line.strip()
@@ -159,16 +181,16 @@ print("Done!")
 
 
 print("keep only N most appearances from names file...",end =" ")
-N=15
-with open('C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed') as f1:
+N=Definitions.num_of_entities
+with open(Definitions.parsed_names_path) as f1:
     lines = f1.readlines()
-with open('C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed', 'w') as f2:
+with open(Definitions.parsed_names_path, 'w') as f2:
     f2.writelines(lines[0:N])
 print("Done!")
 
 
 print("Spans Partitioning...",end =" ")
-file1 = open("C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/A Perfect Peace - NoStopWords.txt", encoding="utf-8")
+file1 = open(Definitions.no_stop_words_path, encoding="utf-8")
 line = file1.read()  #characters
 words = line.split() #words
 i=0
@@ -199,8 +221,14 @@ while i<len(words):
     #if end of the book, print to ouput file
     if i>=len(words):
         ordered_spans = arrange_spans(spans,entities)
-        excel_path = 'PerfectPeace_Spans/spans_PerfectPeace.xlsx'
-        spans_to_excel(ordered_spans, excel_path,"PerfectPeace")
+        excel_path = Definitions.excel_path
+        wmap, cmap, bmap = spans_to_excel(ordered_spans, excel_path,Definitions.book_name)
+        with open("wmap_cmap_bmap.pkl", "wb") as f:
+            pickle.dump(wmap, f)
+            pickle.dump(cmap, f)
+            pickle.dump(bmap, f)
+
+        print("done")
 
 
 
