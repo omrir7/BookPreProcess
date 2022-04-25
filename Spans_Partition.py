@@ -75,6 +75,7 @@ def spans_to_excel(ordered_spans,excel_path,book):
 #spans_ordered_list[0] is a list of all the spans related to the characters appears in its 1st element.
 def arrange_spans(spans,names):
     spans_dict = OrderedDict()
+    del spans[-1]
     for cur_span in spans:
         index_first = index_2d(names,cur_span[-2][0])
         index_second = index_2d(names,cur_span[-2][1])
