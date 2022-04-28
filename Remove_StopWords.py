@@ -2,6 +2,9 @@
 from nltk.corpus import stopwords
 import Definitions
 
+
+
+print("Removing Stop Words From the raw .txt file" , end=" ")
 # word_tokenize accepts
 # a string as an input, not a file.
 stop_words = set(stopwords.words('english'))
@@ -16,3 +19,4 @@ for r in tokens:
         appendFile = open(Definitions.no_stop_words_path, 'a', encoding="mbcs")
         appendFile.write(" " + r)
         appendFile.close(   )
+print("Done")

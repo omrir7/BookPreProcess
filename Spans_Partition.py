@@ -9,7 +9,6 @@
 # after the reference or with another entity. A span will not include more than 2 entities.
 from collections import OrderedDict
 import pandas as pd
-import string
 import re
 import pickle
 import Definitions
@@ -221,6 +220,8 @@ while i<len(words):
 
     #if end of the book, print to ouput file
     if i>=len(words):
+        print("done")
+        print("Writing To Excel file: "+str(Definitions.excel_path) +"....", end=" ")
         ordered_spans = arrange_spans(spans,entities)
         excel_path = Definitions.excel_path
         wmap, cmap, bmap = spans_to_excel(ordered_spans, excel_path,Definitions.book_name)
@@ -228,8 +229,9 @@ while i<len(words):
             pickle.dump(wmap, f)
             pickle.dump(cmap, f)
             pickle.dump(bmap, f)
-
         print("done")
+        break
+
 
 
 

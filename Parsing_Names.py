@@ -1,5 +1,8 @@
 import Definitions
 
+print("Parsing Names File..." , end=" ")
+
+
 #this file gets a file with the entities from the booknlp (first section of the .html file from the booknlp output dir)
 file1 = open(Definitions.raw_names_file_path, encoding="mbcs")
 
@@ -15,4 +18,6 @@ for r in line:
     else:
         appendFile.write(" ")
     appendFile.close()
+
+print("Done")
 
