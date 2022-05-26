@@ -12,6 +12,9 @@ import pandas as pd
 import re
 import pickle
 import Definitions
+import xlrd as xlrd
+import csv
+import gzip
 
 
 #this function is dedicated to find if a word is from the 2d names array,
@@ -80,6 +83,10 @@ def arrange_spans(spans,names):
         index_second = index_2d(names,cur_span[-2][1])
         key1 = str(index_first) + " " + str(index_second)
         key2 = str(index_second) + " " + str(index_first)
+        key1_list = key1.split()
+        key1_list = [int(i) for i in key1_list]
+        key2_list = key2.split()
+        key2_list = [int(i) for i in key2_list]
         if key1 in spans_dict or key2 in spans_dict:
             spans_dict[key1].append(cur_span)
             spans_dict[key2].append(cur_span)
@@ -87,11 +94,11 @@ def arrange_spans(spans,names):
             spans_dict[key1] = []
             spans_dict[key2] = []
             if (key1<key2):
-                spans_dict[key1].append([names[int(key1[0])][0],names[int(key2[0])][0]])
-                spans_dict[key2].append([names[int(key1[0])][0],names[int(key2[0])][0]])
+                spans_dict[key1].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
+                spans_dict[key2].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
             else:
-                spans_dict[key1].append([names[int(key2[0])][0], names[int(key1[0])][0]])
-                spans_dict[key2].append([names[int(key2[0])][0], names[int(key1[0])][0]])
+                spans_dict[key1].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
+                spans_dict[key2].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
             spans_dict[key1].append(cur_span)
             spans_dict[key2].append(cur_span)
     dict_keys = list(spans_dict.keys())
@@ -99,6 +106,17 @@ def arrange_spans(spans,names):
     spans_ordered_list=[]
     for key in dict_keys:
         spans_ordered_list.append(spans_dict[key])
+
+    #remove spans with less than 7 spans (noisy)
+    #for rel in spans_ordered_list:
+    #    index=spans_ordered_list.index(rel)
+    #    len_rel = len(rel)
+    #    if 'Tia' in rel[0]:
+    #        print(1)
+    #    if len_rel<=7:
+    #        del spans_ordered_list[index]
+    spans_ordered_list = [item for item in spans_ordered_list if len(item) >= Definitions.min_spans]
+
     return spans_ordered_list
 def generate_span(text,first_entity_idx,last_span_end_idx,names):
     l=len(text)
@@ -138,17 +156,21 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
         while entity_appear is not False or (entity_appear is False and i<first_entity_idx+100):
             if(entity_appear is not False and entity_appear!=first_entity_in_entities_array):
                 characters.append(text[i])
+                second_entity_in_entities_array = entity_appear
                 cur_span.append(text[i])
                 i+=1
                 entity_appear = index_2d(names, text[i])
                 #keep going after the second entity until another name or 100 tokens after the first name
-                while(entity_appear is False and i<first_entity_idx+100):
+                while i<first_entity_idx+100 and (entity_appear is False or entity_appear==first_entity_in_entities_array or entity_appear==second_entity_in_entities_array):
                     i+=1
-                    if(i<=75220):
-                        entity_appear = index_2d(names, text[i])
+                    if(i<=len(text)-50):
                         cur_span.append(text[i])
+                        entity_appear = index_2d(names, text[i+1])
+
+
+
                 break
-            cur_span.append(text[i])
+            #cur_span.append(text[i])
             i+=1
             entity_appear = index_2d(names,text[i])
 
@@ -225,13 +247,21 @@ while i<len(words):
         ordered_spans = arrange_spans(spans,entities)
         excel_path = Definitions.excel_path
         wmap, cmap, bmap = spans_to_excel(ordered_spans, excel_path,Definitions.book_name)
-        with open("wmap_cmap_bmap.pkl", "wb") as f:
+        with open(Definitions.Metadata_Path, "wb") as f:
             pickle.dump(wmap, f)
             pickle.dump(cmap, f)
             pickle.dump(bmap, f)
         print("done")
         break
 
+#convert to csv and store in the rmn input dir
+read_file = pd.read_excel(excel_path)
+read_file.to_csv (Definitions.csv_path, index = None, header=True)
 
-
+#gz the csv fiile
+fp = open(Definitions.csv_path,"rb")
+data = fp.read()
+bindata = bytearray(data)
+with gzip.open(Definitions.csv_path+".gz", "wb") as f:
+    f.write(bindata)
 

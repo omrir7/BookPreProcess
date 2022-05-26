@@ -10,14 +10,14 @@ file1 = open(Definitions.raw_names_file_path, encoding="mbcs")
 line = file1.read()
 words = line.split()
 
-for r in line:
-    appendFile = open(Definitions.parsed_names_path, 'a',
-                      encoding="mbcs")
-    if not r in ["(" , ")" , "/", "1", "2", "3", "4", "5", "6" ,"7", "8","9" ,"0"]:
-        appendFile.write(r)
-    else:
-        appendFile.write(" ")
-    appendFile.close()
+with open(Definitions.parsed_names_path, 'w',
+                  encoding="mbcs") as f:
+    for r in line:
+        if not r in ["(" , ")" , "/",",", "1", "2", "3", "4", "5", "6" ,"7", "8","9" ,"0"]:
+            f.write(r.lower())
+        else:
+            f.write(" ")
+    f.close()
 
 print("Done")
 
