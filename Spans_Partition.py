@@ -7,6 +7,16 @@
 #This files gets a text file with no stop words and partioning this text to spans with maximum 200 tokens.
 # a token beggins 100 tokens before a mention of a entity (or with a different entity) and ends 100 tokens
 # after the reference or with another entity. A span will not include more than 2 entities.
+
+
+
+
+
+############
+#current issue is that I have entities before the first analized entyyty that are not suppose to be included
+#
+
+
 from collections import OrderedDict
 import pandas as pd
 import re
@@ -22,6 +32,8 @@ import gzip
 # "Yonatan" and "Lifshitz" will return the same value, but "Lifshitz" and "Yolek" will return different int values.
 # the word "Table" will return false, because it is not a name from the names 2d list.
 def index_2d(names2d, appearance):
+    #if (appearance=="yonatan"):
+      #  print(1)
     for i, x in enumerate(names2d):
         if appearance in x:
             return i
@@ -118,7 +130,7 @@ def arrange_spans(spans,names):
     spans_ordered_list = [item for item in spans_ordered_list if len(item) >= Definitions.min_spans]
 
     return spans_ordered_list
-def generate_span(text,first_entity_idx,last_span_end_idx,names):
+def generate_span(text,first_entity_idx,last_span_end_idx,names,entities_all):
     l=len(text)
     if(first_entity_idx<l):
         first_entity_in_entities_array = index_2d(names,text[first_entity_idx])
@@ -129,8 +141,12 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
         cur_first_word_idx=last_span_end_idx
     else:
         cur_first_word_idx=first_entity_idx-100
+    cur_span=[]
     #left half of the span
-    cur_span=text[cur_first_word_idx:first_entity_idx]
+    for i in range(cur_first_word_idx,first_entity_idx): #new_omri
+        if (index_2d(entities_all, text[i]) is False):
+            cur_span.append(text[i])
+    #cur_span=text[cur_first_word_idx:first_entity_idx] #old
 
     #right half of the span
     i=first_entity_idx
@@ -140,32 +156,43 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
     entity_appear = index_2d(names, text[i])
     #while i didnt get 100 tokens after the first entity, and i didnt see a DIFFERENT entity
     while i<first_entity_idx+100 and (entity_appear is False or entity_appear==first_entity_in_entities_array):
-        cur_span.append(text[i])
+        if(index_2d(entities_all, text[i]) is False):
+            cur_span.append(text[i])
         i+=1
         if(i>=l):
             break
-        entity_appear = index_2d(names, text[i])
+        entity_appear = index_2d(entities_all, text[i]) #omri
     #if I didnt find another entity in the next 100 tookens after the first entity so this is not a good span
     if i>=first_entity_idx+100:
         return False, False
     if (i >= l):
         return False, False
+    if entity_appear>=Definitions.num_of_entities:
+        return False,False
     # if i found the second entity which is not identical to the first one
     if entity_appear is not False:
         # while i didnt find the second entity or i found and entity identical to the first one
         while entity_appear is not False or (entity_appear is False and i<first_entity_idx+100):
+            #omri added
+            if (entity_appear is not False) and (entity_appear>=Definitions.num_of_entities):
+                return False,False
+            #end of omri added
             if(entity_appear is not False and entity_appear!=first_entity_in_entities_array):
                 characters.append(text[i])
                 second_entity_in_entities_array = entity_appear
-                cur_span.append(text[i])
+                if (index_2d(entities_all, text[i]) is False):
+                    cur_span.append(text[i])
                 i+=1
                 entity_appear = index_2d(names, text[i])
                 #keep going after the second entity until another name or 100 tokens after the first name
                 while i<first_entity_idx+100 and (entity_appear is False or entity_appear==first_entity_in_entities_array or entity_appear==second_entity_in_entities_array):
                     i+=1
                     if(i<=len(text)-50):
-                        cur_span.append(text[i])
-                        entity_appear = index_2d(names, text[i+1])
+                        if (index_2d(entities_all, text[i]) is False):
+                            cur_span.append(text[i])
+                        entity_appear = index_2d(entities_all, text[i+1]) #omri
+                        if(entity_appear>=Definitions.num_of_entities):
+                            break
 
 
 
@@ -173,6 +200,11 @@ def generate_span(text,first_entity_idx,last_span_end_idx,names):
             #cur_span.append(text[i])
             i+=1
             entity_appear = index_2d(names,text[i])
+
+        #omri - if the second entity is not one of the analized ones
+        if ((any(characters[0] in sublist for sublist in entities_all)) and not (any(characters[0] in sublist for sublist in names))) or ((any(characters[1] in sublist for sublist in entities_all)) and not (any(characters[1] in sublist for sublist in names))):
+            return False, False
+        #end of omri
 
         # appending the characters in this span to the output file, and the length of thi span
         cur_span.append(characters)
@@ -192,23 +224,12 @@ for line in file1:
   line_list = stripped_line.split()
   entities.append(line_list)
 file1.close()
-
-flat_entities = [] #a flat list of all the entities
-i=0
-for sublist in entities:
-    for item in sublist:
-        flat_entities.append(item)
-    i+=1
 print("Done!")
 
 
 print("keep only N most appearances from names file...",end =" ")
-N=Definitions.num_of_entities
-with open(Definitions.parsed_names_path) as f1:
-    lines = f1.readlines()
-with open(Definitions.parsed_names_path, 'w') as f2:
-    f2.writelines(lines[0:N])
-print("Done!")
+entities_all = entities[0:(Definitions.entities_to_cmp-1)] #only not analized
+entities = entities[0:Definitions.num_of_entities]
 
 
 print("Spans Partitioning...",end =" ")
@@ -219,18 +240,31 @@ i=0
 spans=[]
 spans_counter=0
 last_span_end_idx = 0
+last_not_include_entity = 0
 while i<len(words):
-    entity_appear = index_2d(entities,words[i])
+    #omri
+    #if (any(words[i] in sublist for sublist in entities_all) and not any(words[i] in sublist for sublist in entities)) :
+    #    last_not_include_entity = i
+    #end of omri
+    entity_appear = index_2d(entities_all,words[i]) #omri
+
     while entity_appear is False:
         i+=1
         if(i>=len(words)):
             break
-        entity_appear = index_2d(entities, words[i])
-
+        entity_appear = index_2d(entities_all, words[i])
+    if entity_appear == 16:
+        print(1)
+    if entity_appear>=Definitions.num_of_entities:
+        last_not_include_entity=i+1
+        i+=1
+        continue
     first_character_idx = i
     if(first_character_idx==75171):
         print(1)
-    cur_span,i =generate_span(words,i,last_span_end_idx,entities)
+    if(last_span_end_idx<last_not_include_entity):
+        last_span_end_idx=last_not_include_entity+1
+    cur_span,i =generate_span(words,i,last_span_end_idx,entities,entities_all)
     last_span_end_idx=i
     i+=1
     if cur_span is not False:
