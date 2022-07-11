@@ -105,6 +105,7 @@ def arrange_spans(spans,names):
         else:
             spans_dict[key1] = []
             spans_dict[key2] = []
+            #handle [Yoni,Hava] <-> [Hava,Yoni] identicality
             if (key1<key2):
                 spans_dict[key1].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
                 spans_dict[key2].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
@@ -118,18 +119,10 @@ def arrange_spans(spans,names):
     spans_ordered_list=[]
     for key in dict_keys:
         spans_ordered_list.append(spans_dict[key])
-
     #remove spans with less than 7 spans (noisy)
-    #for rel in spans_ordered_list:
-    #    index=spans_ordered_list.index(rel)
-    #    len_rel = len(rel)
-    #    if 'Tia' in rel[0]:
-    #        print(1)
-    #    if len_rel<=7:
-    #        del spans_ordered_list[index]
     spans_ordered_list = [item for item in spans_ordered_list if len(item) >= Definitions.min_spans]
-
     return spans_ordered_list
+
 def generate_span(text,first_entity_idx,last_span_end_idx,names,entities_all):
     l=len(text)
     if(first_entity_idx<l):
