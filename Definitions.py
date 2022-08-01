@@ -14,13 +14,13 @@ raw_names_file_path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfec
 #names parsed path - output of Parsing_Names
 parsed_names_path = 'C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed'
 #how many characters will be evaluated (number of most referenced entities that will be evaluated)
-num_of_entities = 4
+num_of_entities = 2
 
 #entities structure - 2d
 entities_all = "entities.pkl"
 
 #number of entities to comapre to
-entities_to_cmp = 21
+entities_to_cmp = 18
 
 #excel output filw path - output of spans Partition
 excel_path = 'spans_PerfectPeace.xlsx'
