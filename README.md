@@ -1,4 +1,4 @@
-# RMN_Omri
+# BookPreProcess
 
 1. Run BookNLP or another NER (Name-Entity Recognition) tool.
 2. Create a names file with the NER output, where each line is composed 
@@ -25,3 +25,4 @@
 1. Change spans xlsx file to csv and gzip it. Then move it to the data dir in rmn repo with
    the name "relationships.csv.gz".
 2. Take the "wmap_cmap_bmap.pkl" file from "RMN_Omri" dir to the data dir in rmn repo and change its name to "metadata.pkl".
+
