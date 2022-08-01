@@ -26,6 +26,94 @@ import xlrd as xlrd
 import csv
 import gzip
 
+class span:
+    def __init__(self,text, first_entity_idx, last_span_end_idx, names, entities_all):
+        self.characters = []
+        self.tokens     = []
+        self.length     = 0
+        self.endIdx     = 0
+        self.first_character_idx = first_entity_idx
+        self.delete_span = 0
+        l = len(text)
+        if (first_entity_idx < l):
+            first_entity_in_entities_array = index_2d(names, text[first_entity_idx])
+            self.characters.append(text[first_entity_idx])
+        # the first word of the next span is eather 100 words ago or the last span end if it is closer
+        if (first_entity_idx - 100 < last_span_end_idx):
+            cur_first_word_idx = last_span_end_idx
+        else:
+            cur_first_word_idx = first_entity_idx - 100
+        self.tokens = []
+        # left half of the span
+        for i in range(cur_first_word_idx, first_entity_idx):  # new_omri
+            if (index_2d(entities_all, text[i]) is False):
+                self.tokens.append(text[i])
+        # tokens=text[cur_first_word_idx:first_entity_idx] #old
+
+        # right half of the span
+        i = first_entity_idx
+        if (i >= l):
+            self.delete_span = 1
+            return
+
+        entity_appear = index_2d(names, text[i])
+        # while i didnt get 100 tokens after the first entity, and i didnt see a DIFFERENT entity
+        while i < first_entity_idx + 100 and (entity_appear is False or entity_appear == first_entity_in_entities_array):
+            if (index_2d(entities_all, text[i]) is False):
+                self.tokens.append(text[i])
+            i += 1
+            if (i >= l):
+                #self.delete_span = 1
+                break
+            entity_appear = index_2d(entities_all, text[i])  # omri
+        # if I didnt find another entity in the next 100 tookens after the first entity so this is not a good span
+        if i >= first_entity_idx + 100:
+            self.delete_span = 1
+            return
+        if (i >= l):
+            self.delete_span = 1
+            return
+        if entity_appear >= Definitions.num_of_entities:
+            self.delete_span = 1
+            return
+        # if i found the second entity which is not identical to the first one
+        if entity_appear is not False:
+            # while i didnt find the second entity or i found and entity identical to the first one
+            while entity_appear is not False or (entity_appear is False and i < first_entity_idx + 100):
+                if (entity_appear is not False) and (entity_appear >= Definitions.num_of_entities):
+                    self.delete_span = 1
+                    return
+                if (entity_appear is not False and entity_appear != first_entity_in_entities_array):
+                    self.characters.append(text[i])
+                    second_entity_in_entities_array = entity_appear
+                    if (index_2d(entities_all, text[i]) is False):
+                        self.tokens.append(text[i])
+                    i += 1
+                    entity_appear = index_2d(names, text[i])
+                    # keep going after the second entity until another name or 100 tokens after the first name
+                    while i < first_entity_idx + 100 and (entity_appear is False or entity_appear == first_entity_in_entities_array or entity_appear == second_entity_in_entities_array):
+                        i += 1
+                        if (i <= len(text) - 50):
+                            if (index_2d(entities_all, text[i]) is False):
+                                self.tokens.append(text[i])
+                            entity_appear = index_2d(entities_all, text[i + 1])  # omri
+                            if (entity_appear >= Definitions.num_of_entities):
+                                break
+                    break
+                i += 1
+                entity_appear = index_2d(names, text[i])
+
+            # omri - if the second entity is not one of the analized ones
+            if ((any(self.characters[0] in sublist for sublist in entities_all)) and not (any(self.characters[0] in sublist for sublist in names))) or ((any(self.characters[1] in sublist for sublist in entities_all)) and not (any(self.characters[1] in sublist for sublist in names))):
+                self.delete_span = 1
+                return
+            # end of omri
+
+            # appending the characters in this span to the output file, and the length of thi span
+            self.tokens.append(self.characters)
+            self.length = i - cur_first_word_idx
+            if self.delete_span ==0:
+                self.endIdx = i
 
 #this function is dedicated to find if a word is from the 2d names array,
 # if so it returns the entity index, for example, if an entity is called Yonatan Lifshitz and another one is called Yolek,
@@ -123,87 +211,7 @@ def arrange_spans(spans,names):
     spans_ordered_list = [item for item in spans_ordered_list if len(item) >= Definitions.min_spans]
     return spans_ordered_list
 
-def generate_span(text,first_entity_idx,last_span_end_idx,names,entities_all):
-    l=len(text)
-    if(first_entity_idx<l):
-        first_entity_in_entities_array = index_2d(names,text[first_entity_idx])
-        characters=[]
-        characters.append(text[first_entity_idx])
-    #the first word of the next span is eather 100 words ago or the last span end if it is closer
-    if(first_entity_idx-100<last_span_end_idx):
-        cur_first_word_idx=last_span_end_idx
-    else:
-        cur_first_word_idx=first_entity_idx-100
-    cur_span=[]
-    #left half of the span
-    for i in range(cur_first_word_idx,first_entity_idx): #new_omri
-        if (index_2d(entities_all, text[i]) is False):
-            cur_span.append(text[i])
-    #cur_span=text[cur_first_word_idx:first_entity_idx] #old
 
-    #right half of the span
-    i=first_entity_idx
-    if (i >= l):
-        return [], i
-
-    entity_appear = index_2d(names, text[i])
-    #while i didnt get 100 tokens after the first entity, and i didnt see a DIFFERENT entity
-    while i<first_entity_idx+100 and (entity_appear is False or entity_appear==first_entity_in_entities_array):
-        if(index_2d(entities_all, text[i]) is False):
-            cur_span.append(text[i])
-        i+=1
-        if(i>=l):
-            break
-        entity_appear = index_2d(entities_all, text[i]) #omri
-    #if I didnt find another entity in the next 100 tookens after the first entity so this is not a good span
-    if i>=first_entity_idx+100:
-        return False, False
-    if (i >= l):
-        return False, False
-    if entity_appear>=Definitions.num_of_entities:
-        return False,False
-    # if i found the second entity which is not identical to the first one
-    if entity_appear is not False:
-        # while i didnt find the second entity or i found and entity identical to the first one
-        while entity_appear is not False or (entity_appear is False and i<first_entity_idx+100):
-            #omri added
-            if (entity_appear is not False) and (entity_appear>=Definitions.num_of_entities):
-                return False,False
-            #end of omri added
-            if(entity_appear is not False and entity_appear!=first_entity_in_entities_array):
-                characters.append(text[i])
-                second_entity_in_entities_array = entity_appear
-                if (index_2d(entities_all, text[i]) is False):
-                    cur_span.append(text[i])
-                i+=1
-                entity_appear = index_2d(names, text[i])
-                #keep going after the second entity until another name or 100 tokens after the first name
-                while i<first_entity_idx+100 and (entity_appear is False or entity_appear==first_entity_in_entities_array or entity_appear==second_entity_in_entities_array):
-                    i+=1
-                    if(i<=len(text)-50):
-                        if (index_2d(entities_all, text[i]) is False):
-                            cur_span.append(text[i])
-                        entity_appear = index_2d(entities_all, text[i+1]) #omri
-                        if(entity_appear>=Definitions.num_of_entities):
-                            break
-
-
-
-                break
-            #cur_span.append(text[i])
-            i+=1
-            entity_appear = index_2d(names,text[i])
-
-        #omri - if the second entity is not one of the analized ones
-        if ((any(characters[0] in sublist for sublist in entities_all)) and not (any(characters[0] in sublist for sublist in names))) or ((any(characters[1] in sublist for sublist in entities_all)) and not (any(characters[1] in sublist for sublist in names))):
-            return False, False
-        #end of omri
-
-        # appending the characters in this span to the output file, and the length of thi span
-        cur_span.append(characters)
-        len_of_span = i-cur_first_word_idx
-        cur_span.append(len_of_span)
-        return cur_span,i
 
 
 
@@ -246,25 +254,22 @@ while i<len(words):
         if(i>=len(words)):
             break
         entity_appear = index_2d(entities_all, words[i])
-    if entity_appear == 16:
-        print(1)
     if entity_appear>=Definitions.num_of_entities:
         last_not_include_entity=i+1
         i+=1
         continue
     first_character_idx = i
-    if(first_character_idx==75171):
-        print(1)
     if(last_span_end_idx<last_not_include_entity):
         last_span_end_idx=last_not_include_entity+1
-    cur_span,i =generate_span(words,i,last_span_end_idx,entities,entities_all)
-    last_span_end_idx=i
+    cur_span =span(words,i,last_span_end_idx,entities,entities_all)
+    last_span_end_idx = cur_span.endIdx
     i+=1
-    if cur_span is not False:
+    if cur_span.delete_span==0:
         spans.append(cur_span)
+        i=cur_span.endIdx+1
     else:
-        last_span_end_idx = first_character_idx+100
-        i=first_character_idx+100
+        last_span_end_idx = cur_span.first_character_idx+100
+        i=cur_span.first_character_idx+100
 
 
     #if end of the book, print to ouput file
