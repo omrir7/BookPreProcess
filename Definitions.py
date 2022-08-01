@@ -17,13 +17,13 @@ parsed_names_path = 'C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect 
 num_of_entities = 4
 
 #entities structure - 2d
-entities_all = "PerfectPeace_Spans/entities.pkl"
+entities_all = "entities.pkl"
 
 #number of entities to comapre to
 entities_to_cmp = 21
 
 #excel output filw path - output of spans Partition
-excel_path = 'PerfectPeace_Spans/spans_PerfectPeace.xlsx'
+excel_path = 'spans_PerfectPeace.xlsx'
 
 #Minimun amount of spans in dir to participate in the model training
 min_spans = 7
