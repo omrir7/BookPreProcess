@@ -1,4 +1,4 @@
-# RMN_Omri
+# BookPreProcess
 
 1. Run BookNLP or another NER (Name-Entity Recognition) tool.
 2. Create a names file with the NER output, where each line is composed 
