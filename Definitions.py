@@ -14,7 +14,7 @@ raw_names_file_path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfec
 #names parsed path - output of Parsing_Names
 parsed_names_path = 'C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed'
 #how many characters will be evaluated (number of most referenced entities that will be evaluated)
-num_of_entities = 2
+num_of_entities = 3
 
 #entities structure - 2d
 entities_all = "entities.pkl"
@@ -27,7 +27,8 @@ excel_path = 'spans_PerfectPeace.xlsx'
 
 #Minimun amount of spans in dir to participate in the model training
 min_spans = 7
-
+#minimu, length of span
+min_span_length = 5
 #Metadata Path
 Metadata_Path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/rmn/data/metadata.pkl"
 
