@@ -3,16 +3,16 @@
 book_name = "PerfectPeace"
 
 #book .txt file path - input to Remove_StopWrods
-book_txt_path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/A Perfect Peace.txt"
+book_txt_path = "C:/Users/Dani2.OFER3090PC/Desktop/omrirafa/NLP/BookNLP/A Perfect Peace/A Perfect Peace.txt"
 
 #book .txt file without stop words
-no_stop_words_path = 'C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/A Perfect Peace - NoStopWords.txt'
+no_stop_words_path = 'C:/Users/Dani2.OFER3090PC/Desktop/omrirafa/NLP/BookNLP/A Perfect Peace/A Perfect Peace - NoStopWords.txt'
 
 #raw names file - Input od Parsing_Names
-raw_names_file_path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names"
+raw_names_file_path = "C:/Users/Dani2.OFER3090PC/Desktop/omrirafa/NLP/BookNLP/A Perfect Peace/outputdir/Names"
 
 #names parsed path - output of Parsing_Names
-parsed_names_path = 'C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed'
+parsed_names_path = 'C:/Users/Dani2.OFER3090PC/Desktop/omrirafa/NLP/BookNLP/A Perfect Peace/outputdir/Names_Parsed'
 #how many characters will be evaluated (number of most referenced entities that will be evaluated)
 num_of_entities = 2
 

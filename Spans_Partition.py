@@ -26,6 +26,8 @@ import xlrd as xlrd
 import csv
 import gzip
 
+import to_one_reference
+
 class span:
     def __init__(self,text, first_entity_idx, last_span_end_idx, names, entities_all):
         self.characters = []
@@ -237,6 +239,8 @@ print("Spans Partitioning...",end =" ")
 file1 = open(Definitions.no_stop_words_path, encoding="utf-8")
 line = file1.read()  #characters
 words = line.split() #words
+print("Running to_one_reference Script...", end=" ")
+words = to_one_reference.one_ref(words,entities_all)
 i=0
 spans=[]
 spans_counter=0
