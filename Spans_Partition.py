@@ -114,6 +114,9 @@ class span:
             # appending the characters in this span to the output file, and the length of thi span
             self.tokens.append(self.characters)
             self.length = i - cur_first_word_idx
+            if self.length<Definitions.min_span_length:
+                self.delete_span=1
+                return
             if self.delete_span ==0:
                 self.endIdx = i
 
@@ -181,33 +184,42 @@ def arrange_spans(spans,names):
     spans_dict = OrderedDict()
     del spans[-1]
     for cur_span in spans:
-        index_first = index_2d(names,cur_span[-2][0])
-        index_second = index_2d(names,cur_span[-2][1])
-        key1 = str(index_first) + " " + str(index_second)
-        key2 = str(index_second) + " " + str(index_first)
-        key1_list = key1.split()
-        key1_list = [int(i) for i in key1_list]
-        key2_list = key2.split()
-        key2_list = [int(i) for i in key2_list]
-        if key1 in spans_dict or key2 in spans_dict:
-            spans_dict[key1].append(cur_span)
-            spans_dict[key2].append(cur_span)
+        index_first = index_2d(names,cur_span.characters[0])
+        index_second = index_2d(names,cur_span.characters[1])
+        list_of_chars = [names[index_first][0],names[index_second][0]]
+        list_of_chars.sort()
+        #spans_dict[key1].append([names[int(key1_list[0])][0], names[int(key2_list[0])][0]])
+        cur_span.characters = tuple(list_of_chars)
+        #key1 = str(index_first) + " " + str(index_second)
+        #key2 = str(index_second) + " " + str(index_first)
+        #key1_list = key1.split()
+        #key1_list = [int(i) for i in key1_list]
+        #key2_list = key2.split()
+        #key2_list = [int(i) for i in key2_list]
+        #if key1 in spans_dict or key2 in spans_dict:
+        #    spans_dict[key1].append(cur_span)
+        #    spans_dict[key2].append(cur_span)
+        #spans_dict()
+        if cur_span.characters in spans_dict:
+            spans_dict[cur_span.characters].append(cur_span.tokens)
+            spans_dict[cur_span.characters].append(cur_span.tokens)
         else:
-            spans_dict[key1] = []
-            spans_dict[key2] = []
+            spans_dict[cur_span.characters] = []
+            spans_dict[cur_span.characters] = []
+            spans_dict[cur_span.characters].append(cur_span.characters)
             #handle [Yoni,Hava] <-> [Hava,Yoni] identicality
-            if (key1<key2):
-                spans_dict[key1].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
-                spans_dict[key2].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
-            else:
-                spans_dict[key1].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
-                spans_dict[key2].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
-            spans_dict[key1].append(cur_span)
-            spans_dict[key2].append(cur_span)
-    dict_keys = list(spans_dict.keys())
-    del dict_keys[1::2]
+            #if (key1<key2):
+            #    spans_dict[key1].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
+            #    spans_dict[key2].append([names[int(key1_list[0])][0],names[int(key2_list[0])][0]])
+            #else:
+            #    spans_dict[key1].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
+            #    spans_dict[key2].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
+            spans_dict[cur_span.characters].append(cur_span.tokens)
+            spans_dict[cur_span.characters].append(cur_span.tokens)
+    #dict_keys = list(spans_dict.keys())
+    #del dict_keys[1::2]
     spans_ordered_list=[]
-    for key in dict_keys:
+    for key in spans_dict.keys():
         spans_ordered_list.append(spans_dict[key])
     #remove spans with less than 7 spans (noisy)
     spans_ordered_list = [item for item in spans_ordered_list if len(item) >= Definitions.min_spans]
