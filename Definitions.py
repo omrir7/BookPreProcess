@@ -30,10 +30,10 @@ min_spans = 7
 #minimu, length of span
 min_span_length = 5
 #Metadata Path
-Metadata_Path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/rmn/data/metadata.pkl"
+Metadata_Path = "C:/Users/Dani2.OFER3090PC/Desktop/omrirafa/NLP/rmn/data/metadata.pkl"
 
 #csv path
-csv_path = "C:/Users/OmriRafaeli/PycharmProjects/NLP/rmn/data/relationships.csv"
+csv_path = "C:/Users/Dani2.OFER3090PC/Desktop/omrirafa/NLP/rmn/data/relationships.csv"
 
 #NER TESTS
 flair_ner_file = "C:/Users/OmriRafaeli/PycharmProjects/NLP/BookNLP/A Perfect Peace/outputdir/Names_flair.pkl"
