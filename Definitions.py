@@ -13,6 +13,7 @@ raw_names_file_path = "../BookNLP/A Perfect Peace/outputdir/Names"
 
 #names parsed path - output of Parsing_Names
 parsed_names_path = '../BookNLP/A Perfect Peace/outputdir/Names_Parsed'
+
 #how many characters will be evaluated (number of most referenced entities that will be evaluated)
 num_of_entities = 3
 
@@ -34,6 +35,7 @@ Metadata_Path = "../rmn/data/metadata.pkl"
 
 #csv path
 csv_path = "../rmn/data/relationships.csv"
+
 
 #NER TESTS
 flair_ner_file = "../BookNLP/A Perfect Peace/outputdir/Names_flair.pkl"

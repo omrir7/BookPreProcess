@@ -12,11 +12,11 @@
    
    Ron Wiesley     Wiesly    Ron    
    
-
-3. Update Definitions File with the different file paths and 
+3. Run to_one_reference to reference each entity in the book in one way.
+4. Update Definitions File with the different file paths and 
    the amount of entities needs to be analized (the tool will analize the 
    most <Definitions.num_of_entities> reffered entities in the book).
-4. Run the run.sh script.
+5. Run the run.sh script.
 
 
 
