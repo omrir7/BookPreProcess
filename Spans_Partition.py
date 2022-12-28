@@ -26,6 +26,8 @@ import xlrd as xlrd
 import csv
 import gzip
 
+import to_one_reference
+
 class span:
     def __init__(self,text, first_entity_idx, last_span_end_idx, names, entities_all):
         self.characters = []
@@ -200,9 +202,7 @@ def arrange_spans(spans,names):
         #spans_dict()
         if cur_span.characters in spans_dict:
             spans_dict[cur_span.characters].append(cur_span.tokens)
-            spans_dict[cur_span.characters].append(cur_span.tokens)
         else:
-            spans_dict[cur_span.characters] = []
             spans_dict[cur_span.characters] = []
             spans_dict[cur_span.characters].append(cur_span.characters)
             #handle [Yoni,Hava] <-> [Hava,Yoni] identicality
@@ -212,7 +212,6 @@ def arrange_spans(spans,names):
             #else:
             #    spans_dict[key1].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
             #    spans_dict[key2].append([names[int(key2_list[0])][0], names[int(key1_list[0])][0]])
-            spans_dict[cur_span.characters].append(cur_span.tokens)
             spans_dict[cur_span.characters].append(cur_span.tokens)
     #dict_keys = list(spans_dict.keys())
     #del dict_keys[1::2]
@@ -249,6 +248,7 @@ print("Spans Partitioning...",end =" ")
 file1 = open(Definitions.no_stop_words_path, encoding="utf-8")
 line = file1.read()  #characters
 words = line.split() #words
+
 i=0
 spans=[]
 spans_counter=0
